@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供應鏈管理營運管理師 - 隨機刷題系統</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; line-height: 1.6; background-color: #f4f7f6; color: #333; }
+        .quiz-container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 0.95em; }
+        .question { margin-bottom: 25px; padding: 20px; background: #fafafa; border-radius: 8px; border-left: 5px solid #3498db; }
+        .question p { font-weight: bold; margin-top: 0; margin-bottom: 12px; font-size: 1.05em; white-space: pre-wrap; }
+        .options label { display: block; margin: 8px 0; padding: 10px; background: white; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .options label:hover { background: #ebf5fb; border-color: #3498db; }
+        .options input[type="radio"] { margin-right: 10px; transform: scale(1.1); }
+        button { background: #2ecc71; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; width: 100%; margin-top: 20px; transition: background 0.2s; }
+        button:hover { background: #27ae60; }
+        .result { margin-top: 30px; padding: 20px; background: #e8f8f5; border-radius: 8px; border: 1px solid #a3e4d7; display: none; text-align: center; }
+        .score { font-size: 24px; color: #117a65; font-weight: bold; margin-bottom: 10px; }
+        .feedback { margin-top: 8px; font-weight: bold; font-size: 0.95em; padding: 5px 10px; border-radius: 4px; display: inline-block; }
+        .correct-ans { background: #d4efdf; color: #196f3d; }
+        .wrong-ans { background: #f9e79f; color: #7d6608; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>🎯 供應鏈管理專業認證</h1>
+    <div class="subtitle">營運管理師模擬試題（隨機抽選 30 題練習）</div>
+    <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 20px;">
+    
+    <form id="quizForm">
+        <div id="questionsContainer"></div>
+        <button type="button" onclick="submitQuiz()">繳交答案，立即查看分數與解答</button>
+    </form>
+
+    <div id="resultArea" class="result">
+        <p class="score" id="scoreDisplay"></p>
+        <p>答對題數：<span id="correctCountDisplay"></span> / 30 題</p>
+        <p style="color: #7f8c8d; font-size: 0.9em;">提示：可以重新整理網頁 (按 F5) 來抽選下一組 30 題！</p>
+    </div>
+</div>
+
+<script>
+// 完整題庫匯入
+const itemBank = [
+    { q: "針對企業強化供應鏈管理所創造的優勢與效益，下列敘述何者正確？\nA.不僅在於節流(Costdown)，同時也能創造利潤與提升股東權益。\nB.提升顧客服務水準，創造銷售收益。\nC.降低存貨與作業成本，提升整體營收。", options: ["A、B正確，C不正確。", "A、C正確 B不正確。", "A、B、C皆正確", "B、C正確，A不正確。"], answer: 2 },
+    { q: "有關接單後組裝生產(ATO)的敘述，下列選項何者錯誤？", options: ["滿足客戶對於產品客製化(Customization)與及時(Just in Time)供應的需求。", "提供很短的訂單達交(Order to Delivery; OTD)時間。", "滿足客戶少量多樣化的需求，提升客戶滿意度。", "ATO 主要適用於製造業(例如筆記型或平板電腦的組裝)，並不適用於流通業之連鎖商店型態的經營(例如便利超商或量販店)。"], answer: 3 },
+    { q: "在企業經營與管理，有一種策略分析方法，可以檢視企業是否具備良好的供應鏈管理，建立自身的核心能力與競爭優勢，進而創造企業本身最大的價值。請問是下列哪一項分析方法？", options: ["價值鏈分析(Value Chain Analysis. VCA)", "損益平衡分析(Break Even Point BEP)", "多變量分析(Multivariate Analysis)", "可靠度分析(Reliability analysis)"], answer: 0 },
+    { q: "企業推廣供應鏈管理創造的優勢與效益為何？", options: ["企業自身的成功", "促進供應鏈整體成員的成功", "供應商的成功", "直接顧客的成功"], answer: 1 },
+    { q: "針對企業全球化的原因，下列敘述何者正確？\nA.市場的考量 B.技術的考量 C.成本的考量 D.經濟和政治層面的考量", options: ["AB", "ABC", "ABD", "ABCD"], answer: 3 },
+    { q: "有關全球運籌管理模式的敘述如下：商品在工廠製造完成後，在非常短的時間內，由工廠直接安排最快速的運輸模式，運送到下游客戶手中，以達到時效性要求。試問屬於全球運籌管理之何種全球運籌管理模式？", options: ["直接運送模式(Direct Shipment)", "當地補貨中心(Local Buffer Center)", "海外組裝中心(Configuration Center)", "以上皆非"], answer: 0 },
+    { q: "當企業的競爭優勢為「客製化與快速交貨時」，最適合的生產模式為何？", options: ["計劃生產(Make-to-Stock, MTS)", "接單組裝(Assembly-to-Order, ATO)", "接單生產(Make-to-Order, MTO)", "大量生產(Mass Production)"], answer: 1 },
+    { q: "有關總體規劃(Aggregate Planning)的主要功能，下列敘述何者正確？\nA.提供管理者使用資源之依據，避免發生資源閒置或過度負荷，進而降低生產成本。\nB.透過銷售預測以使生產資源完成更適切的分配，除了滿足客戶需求，並支持與實現銷售計畫。\nC.製造資源不足時，幫助充分使用資源以獲得最大產出，或者提出產能擴充計畫以跨大獲利。", options: ["A、B正確，C不正確。", "A、B、C皆正確", "A、C正確，B不正確。", "B、C正確 A不正確。"], answer: 1 },
+    { q: "主排程規劃(Master Scheduling)必須於公司內部進行跨部門溝通與協調的部門？\nA.銷售部門 B.生產製造部門 C.研發部門 D.財務部門 E.人資部門", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 3 },
+    { q: "下列何者是總體規劃(Aggregate Planning)所考慮的因素？\nA.原物料供應與取得 B.生產水準 C.委外加工產能 D.總體經濟環境 E.員工薪資", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 3 },
+    { q: "在主排程規劃中訂定三階段時間柵欄(Time Fense)，生產排程允許自由調整與變動的階段是在：", options: ["凍結區域", "適度變動區域", "可變動區域", "以上皆非"], answer: 2 },
+    { q: "在生產管理運用瓶頸製程管理，可以達成企業整體營運目標為何？\nA.增加系統的產出 B.降低整體作業費用 C.降低整體庫存水準", options: ["A、B正確 C不正確。", "A、B、C皆正確", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 1 },
+    { q: "有關瓶頸製程的概念，下列敘述何者錯誤？", options: ["生產系統當中產能最吃緊的製程即可定義為「瓶頸製程」，至於其餘的製程都可被稱為「非瓶頸製程」。", "提升瓶頸製程的速度可以提升整體生產系統的產出速度", "提升非瓶頸製成的速度對於提升整體系統的產出速度成效甚大", "無論製造業或服務業的流程管理都適用「瓶頸控制」來掌控整體生產系統的產出"], answer: 2 },
+    { q: "有關 ABC 存貨分類與管理原則，下列敘述何者錯誤？", options: ["將存貨按成本比重高低分為A、B、C三類，依據其重要性採取不同的控制方法。", "A類存貨數量最多，但存貨的價值卻最少，應採用簡單控制即可。", "C類存貨數量最多，但存貨的價值卻最少，應採用簡單控制即可。", "管理者應著重於高流通、高單價的商品管理"], answer: 1 },
+    { q: "如何維持合理庫存是企業管理的重要工作，下列敘述何者正確？\nA.強化物料驗收、降低物料品質不良率 B.遴選優良供應商 C.採行經濟訂購量 D.實施及時供應系統 E.確保存量記錄之正確性", options: ["ABC", "ABCE", "ABDE", "ABCDE"], answer: 3 },
+    { q: "從物料採購開始到交貨完成，稱之為何種時間？", options: ["採購標準時間", "採購前置時間", "採購適當時間", "採購變異時間"], answer: 1 },
+    { q: "有關影響安全存量(Safety stock)的因素，下列敘述何者錯誤？", options: ["維持安全存量的目的為緩衝需求的不穩定性及提升供應的穩定性", "前置時間越長，需要越多的安全庫存才能達到一定的服務水準。", "安全存量設定越高，則持有成本越低。", "需求量的變異越大，則安全存量越大。"], answer: 2 },
+    { q: "良好存貨管理機制，是影響企業整體營運成本的關鍵因素，下列敘述何者正確？\nA.降低訂購成本 B.提升顧客服務水準 C. 囤積物資、賤買貴賣\nD.增加持有成本 E.提升生產作業的穩定與彈性", options: ["ABC", "ABE", "ABDE", "ABCDE"], answer: 1 },
+    { q: "有關安全存量的敘述，下列敘述何者錯誤？", options: ["在商品市價低時買進囤積，在市價好時賣出。", "避免需求預測不準確所造成的缺貨損失", "提升供應的穩定性", "實施及時供應系統，則可降低安全存量。"], answer: 0 },
+    { q: "有關訂購的前置時間(Lead Time)，下列敘述何者錯誤？", options: ["係指顧客下訂單到收到貨品所需的時間", "安全存量與前置時間成正比", "安全存量與前置時間成反比", "前置時間越短，再訂購點愈低。"], answer: 2 },
+    { q: "有關存貨計算公式，可供出貨數量-訂單出貨數量為何？", options: ["訂單庫存數量", "總庫存數量", "現有庫存數量", "安全庫存數量"], answer: 2 },
+    { q: "跨國性採購的成本相對複雜，價格只是其中之一，另含許多隱藏性成本，下列敘述何者正確？\nA.商務出差費用 B.付款條件 C.運輸與倉儲成本 D.供應品質 E.匯率、稅率及關稅 F.行銷、宣傳或廣告", options: ["ABC", "ABCD", "ABCDE", "ABCDEF"], answer: 2 },
+    { q: "為高價值、低取得風險的產品項目。這類產品供應商眾多，提供同質性產品，採購金額龐大，屬於買方市場，例如：原物料或是零組件，下列何者為此類產品？", options: ["策略性產品", "關鍵性產品", "槓桿性產品", "一般性產品"], answer: 2 },
+    { q: "為高價值、高取得風險的產品項目，這類產品通常屬於企業核心業務範圍，與這類型的供應商合作，應嘗試建立彼此互信的聯盟關係、及整體供應鏈體系效益提升，以增進策略聯盟的價值，強化企業競爭優勢。以下何者為此類產品？", options: ["策略性產品", "關鍵性產品", "槓桿性產品", "一般性產品"], answer: 0 },
+    { q: "有關採購的五大要素，下列敘述何者為非？", options: ["速度(Speed)", "價格(Price)", "數量(Quantity)", "交期(Delivery Time)"], answer: 0 },
+    { q: "採購數量的多寡決定議價能力(Barging Power)與折扣優惠，但是仍須考量哪一項因素，以有效降低不必要的持有成本(Carrying Cost)、庫存積壓及營運資金週轉的風險：\nA.產品生命週期 B.庫存數量 C.存貨週轉率", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "採購部門針對供應商進行評估的指標，下列敘述何者錯誤？", options: ["品質(Quality)", "成本(Cost)", "交期(Delivery)", "退傭百分比"], answer: 3 },
+    { q: "針對供應商在成本(Cost)的績效評估，下列敘述何者錯誤？", options: ["價格是企業最重視也最常見的績效衡量指標", "工廠比較的項目僅只是產品的單價，品質差異不列入考量因素。", "以整體持有成本(Total Cost of Ownership TCO)原則的進行評估", "評估指標在於相互比較，例如以實際價格作為基準價格，與上次採購的價格或是其它供應商提供的價格作比較。"], answer: 1 },
+    { q: "有關改善交期的方法與策略，下列敘述何者正確？\nA.及時供應採購 B.增加整備時間 C. 提升生產線瓶頸製程產能 D.降低運輸前置時間 E.建立供應商存貨管理模式", options: ["ABC", "ABE", "ACDE", "ABCDE"], answer: 2 },
+    { q: "有關造成長鞭效應(Bullwhip effect)的原因，下列敘述何者正確？\nA.需求預測誤差 B.大批量採購 C.運送前置時間過長 D.經銷商浮報訂單 E.產品價格波動影響進貨意願與時機", options: ["ABC", "ABCD", "ABDE", "ABCDE"], answer: 3 },
+    { q: "有關產業界普遍運用的「供應商存貨管理」模式，下列敘述何者錯誤？", options: ["以電子資料交換作為供應鏈成員間，資訊交換與分享的媒介。。", "瞭解供應鏈體系中合作夥伴間的需求預測、採購計畫、庫存策略及配銷計畫，提供企業內部進行市場需求預測、存貨管理與補貨機制。", "對供應商而言，將造成資訊與物流成本大幅增加，及重要採購、庫存資訊洩漏流的風險。", "透過發貨倉庫，進行及時供貨模式，達到降低庫存、縮短供貨時間及提升顧客服務的效益。"], answer: 2 },
+    { q: "有關供應鏈協同作業(Supply Chain Collaboration Operation)的意涵，下列敘述何者正確？\nA.指兩個或兩個以上的企業為了實現共同目標，積極協調彼此間的商務活動。\nB.範疇包括協同計劃/預測與補貨、協同採購、協同產品設計、協同製造、協同物流與協同行銷與銷售等作業。\nC.根據各成員資源的現況作最適的配置與安排，並建立共同的行銷模式與物流作業，快速回應顧客與市場的需求，建立企業競爭優勢。\nD.供應鏈成員共同參與、齊心協力達成設定的目標，彼此以各自核心能力進行資源互補與資訊共享。", options: ["AB", "ABC", "ABD", "ABCD"], answer: 3 },
+    { q: "運用先進規劃與排程(APS)進行生產規劃與排程，下列敘述何者正確？\nA.縮短從訂單到出貨的週期時間 B.快速回覆客戶詢單與交期 C.縮短製造的週期時間 D.增加庫存與在製品庫存 E.充分掌握現場產能，提高生產價格變動率，提升生產能量。", options: ["ABC", "ABCE", "ABDE", "ABCDE"], answer: 0 },
+    { q: "有關推動供應鏈協同作業效益，下列敘述何者錯誤？", options: ["夥伴關係管理是與合作夥伴營造出創新、互信的關係，是推動供應鏈協同作業的關鍵因素。", "完善的知識 management，累積共同的流程、專業技術與知識，帶動合作夥伴提升創造力與競爭力。", "建立合作夥伴即時、快速的資訊分享，提昇產品品質與快速回應市場與客戶的需求。", "供應鏈成員間彼此利潤共享，並提供成員在財務上的融資與紓困。"], answer: 3 },
+    { q: "有關推動協同產品設計的優點，下列敘述何者正確？\nA.達成跨企業協同設計作業模式 B.保存與傳承研發經驗 C.零組件的採購更有彈性 D.減少研發時間與成本 E.供應商與客戶無法共同參與協作", options: ["ABC", "ABCD", "BCDE", "ABCDE"], answer: 1 },
+    { q: "經由供應鏈對供應鏈的競爭，競爭優勢最後是由誰贏得？", options: ["供應商", "供應鏈中的核心企業", "顧客", "供應鏈整體"], answer: 3 },
+    { q: "有關貨櫃(Container)運輸的優點，下列敘述何者正確？\nA.簡化貨物包裝 B.方便裝卸與運輸 C.確保貨物安全 D.船舶運輸速度快", options: ["AB", "ABC", "ACD", "ABCD"], answer: 1 },
+    { q: "一般海運貨櫃量的計算是以 TEU 為基礎單位，若有 3 個 40 呎的貨櫃與 3 個 20 呎的貨櫃，相當於多少 TEU？", options: ["7 TEU", "8 TEU", "9 TEU", "10 TEU"], answer: 2 },
+    { q: "假設你準備裝運一批冷凍魚獲產品(保鮮條件為零下-25℃)，以貨櫃運輸出口至美國西岸的洛杉磯港口，試問需要以哪一種型態的貨櫃裝運？", options: ["普通貨櫃(Dry Container)", "冷藏貨櫃/冷凍貨櫃(Refrigerated Container)", "開頂貨櫃(Open Top Container)", "平板貨櫃/平台貨櫃(Flat/Platform)"], answer: 1 },
+    { q: "國際貿易與物流作業，託運人(Shipper)託運海運進出口貨物的方式為何？\nA.直接與船公司或船務代理公司之託運方式\nB.以海運承攬運送業為主之託運方式。\nC.以報關行為主之託運方式", options: ["A、B正確，C不正確。", "A、C正確，B不正確。", "A、B、C皆正確", "B、C正確 A不正確。"], answer: 2 },
+    { q: "適合以航空運輸的貨物種類，下列敘述何者正確？\nA.高科技產品、電子產品、寶石等高價值貨物 B.生鮮產品及活體動物 C.書報雜誌、時裝等具時效性的貨物 D.如黃金、美鈔、珠寶等貴重物品 E.使貨損和延遲減至最低之大型機器設備", options: ["AB", "BCD", "ACDE", "ABCDE"], answer: 3 },
+    { q: "假設你準備裝運一批超高的貨物，如大型整體機械、鋼鐵材料等笨重貨物，無頂部，通常以帆布覆蓋並捆綁以避免貨物本身暴露在外，以貨櫃運輸出口至美國東岸的巴爾的摩港口，試問需要以哪一種型態的貨櫃裝運？", options: ["普通貨櫃(Dry Container)", "冷藏貨櫃/冷凍貨櫃(Refrigerated Container)", "開頂貨櫃(Open Top Container)", "平板貨櫃/平台貨櫃(Flat/Platform)"], answer: 2 },
+    { q: "有關國際貨櫃運輸出口作業流程的敘述，何者錯誤？", options: ["運送條件的洽談主要是指運費及退傭(Withdrawals)", "結關日(Closing Date)一般訂於船到日(ETA)之前2天", "向船公司或承攬業簽訂艙位，稱為簽S/O或訂艙(Booking)", "提領空櫃時需做櫃況檢查，確認櫃況完好方可提領。"], answer: 0 },
+    { q: "有關倉儲功能中之越庫作業(Cross Dock)，下列敘述何者錯誤？", options: ["針對進出頻率較高的貨物，在收貨後直接越過儲位存放區(不再入庫儲存)· 並移至出貨碼頭(暫存區)的作業。", "減少搬運及儲存作業的時間與成本", "降低庫存及貨物保管成本", "增加出貨作業的人力、時間及成本。"], answer: 3 },
+    { q: "進貨作業是物流中心初步之處理作業，下列敘述何者正確？\nA.客戶透過不同傳輸工具，發出進貨通知至物流中心。\nB.須正確掌握到貨時間、貨物品項及數量，事先規劃進貨的時程和卸貨的碼頭。\nC.卸貨時需特別注意車輛與碼頭間的高度差距與空隙。\nD.倉儲人員開始卸貨，與司機清點貨物數量是否正確，檢查貨物資料等作業。\nE.如果卸貨過程發現瑕疵或誤送貨物，則立即移至儲存區上架，事後再告知貨主。", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 2 },
+    { q: "物流中心的儲存作業，需考慮貨物之特性與差異，下列哪一選項是進行儲位管理時，必須考慮的因素？\nA.體積、重量、形狀 B.溫度(低溫、常溫倉) C.氣味 D.危險等級 E.倉租", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 2 },
+    { q: "有關倉儲的重要性，下列敘述何者正確？\nA.具有緩衝功能，可調節供給與需求間的差異。\nB.在產品銷售前，倉儲可提供暫存的場所。\nC.提供顧客即時供貨的服務", options: ["A、B正確，C不正確。", "A、B、C皆正確", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 1 },
+    { q: "有關流通加工作業，以下何者錯誤？", options: ["通常不會改變商品的性質", "加工材料表(BOM)表是重要的輸入要件", "包含了促進銷售或提高物流效率或是商品加值的目的", "通常也包含深度加工的作業"], answer: 3 },
+    { q: "有關倉庫儲存保管作業，下列敘述何者錯誤？", options: ["大多數物流中心採用重型料架作為大量儲存之用。", "進出貨頻率高的貨物放置於最方便進出貨品之儲位", "為節省成本支出，放置於重型料架之貨物不需做固定措施。", "必須考慮貨物之體積、重量、溫度及是否屬於危險等級等因素。"], answer: 2 },
+    { q: "有關物流中心訂單處理主要目的，下列敘述何者正確？\n①處理有關客戶訂單的確認、查核、分析與維護。\n②依據訂單進行相關物流作業指派，適時、適地、適量、準確的送達。", options: ["①不正確、②正確", "①正確、②不正確", "①、②皆不正確", "①、②皆正確"], answer: 3 },
+    { q: "有關海關主要業務，下列選項何者正確？\nA查緝走私 B進口關稅稽徵 C保稅業務 D貿易統計 E出口關稅稽徵", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 3 },
+    { q: "有關貨物通關自動化的優點，下列選項何者正確？\nA隨時收單 B加速通關 C線上掌握報關狀態 D避免人為疏失 E先放後稅", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 3 },
+    { q: "大義公司進口貨物，預計於 7 月 25 日到達台灣。依照規定，大義公司必須在何時向海關辦理報關？", options: ["8月1日", "8月4日", "8月9日", "8月24日前"], answer: 2 },
+    { q: "有關「國際物流中心」保稅制度的敘述，下列選項何者正確？\nA.自國外運入物流中心供營運之貨物，免徵關稅、貨物稅等。\nB.自國外輸入自用機器、設備等免徵進口稅捐。\nC.保稅貨物進儲國際物流中心可無限期儲存。\nD.物流中心採自主式管理，貨物進行重整作業無須海關監視。\nE.輸至保稅區得按月彙報。", options: ["ABC", "ABD", "ACDE", "ABCDE"], answer: 3 },
+    { q: "有關保稅制度的功能，下列敘述何者正確？\nA.彈性融通與調度營運資金 B.提升國際市場競爭力 C.吸引外資提升經濟發展 D.簡化通關程序有助業者營運 E.引進工業技術促進工業生根", options: ["AB", "ABC", "ABCD", "ABCDE"], answer: 3 },
+    { q: "貨物進行通關時，遇到免審免驗通關，即免審書面文件、免驗貨物放行，這是屬於哪一種通關方式？", options: ["C4", "C3", "C2", "C1"], answer: 3 },
+    { q: "宇博企業欲出口一批貨物，海關透過電腦連線告知人員，需要於隔天辦公時間結束前補送書面報單及其他文件，免驗放行。請問需備齊哪些資料？\nA.商業發票 B.裝箱單 C. 出口報單 D. 營利事業所得稅單 E.出口提單", options: ["AB", "ABC", "ABCE", "ABCDE"], answer: 2 },
+    { q: "現代供應鏈管理資訊系統需具備的特性，下列選項何者正確？\nA.促進資訊分享、交流及支援企業與供應商之協同合作\nB.上下游資訊分享與協同合作，有效降低長鞭效應。\nC. 提升企業運籌管理與快速反應能力\nD. 提升決策資訊的正確性", options: ["AB", "ABC", "ACD", "ABCD"], answer: 3 },
+    { q: "以下哪些描述是為無線射頻識別(RFID)的特性？\nA.體積大 B.資料可讀寫 C.耐用性 D.數據的記憶容量大 E.必需要固定在紙張上才能使用", options: ["AB", "ABC", "BCD", "ABCD"], answer: 2 },
+    { q: "有關 ERP的效益與企業價值(Business Value)，下列選項何者正確？\nA.企業內部資訊資源整合 B.提升企業快速反應能力 C.提升決策資訊正確性 D.現行流程合理化 E.提升客戶滿意度 F.提升全球運籌管理能力", options: ["ABC", "ABCD", "ABCDE", "ABCDEF"], answer: 3 },
+    { q: "有關電子化採購(e-Procurement)的特性，下列選項何者正確？\nA.市場價格透明化與降低搜尋成本 B.採購作業標準化、提升員工滿意度 C.縮短訂單周期時間、提升採購作業效率", options: ["A、B正確 C不正確。", "A、C正確，B不正確。", "A、B、C皆正確", "B、C正確，A不專確。"], answer: 2 },
+    { q: "建立「e化物流資訊共同平台」對於提升整體供應鏈之績效，下列選項何者正確？\nA.提升訂單處理正確性 B.降低安全庫存 C.縮短交期 D.貨況追蹤 E.增加各成員聯繫與出貨成本", options: ["ABC", "ABCD", "BCDE", "ABCDE"], answer: 1 },
+    { q: "有關 ERP 系統「生產規劃管理(Production Planning) 模組」功能，下列選項何者正確？\n①建立物料庫存資訊及供補作業，適時支援生產及銷售的需求。\n②讓企業發揮最佳的產能，兼顧彈性生產的能力。", options: ["①正確、②不正確", "①不正確、②正確", "選項①、②皆正確", "選項①、②皆不正確"], answer: 2 },
+    { q: "有關 ERP系統「銷售運籌管理(Sales and Distribution)模組」功能，下列選項何者正確？\nA.提供客戶詢價、報價、訂單、出貨管理、運輸規劃及帳單流程處理等功能\nB.協助組織有效且快速地掌握市場銷售等相關資訊\nC.提供各類型的銷售分析，使組織能夠針對市場需求做出即時回應。", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "有關國際物流的內涵與特色，下列敘述何者正確？\nA.涉及跨越二個國家以上的物流作業。\nB.涉及國際貿易商品買賣行為，隨各國基礎結構不同而有不同模式。\nC.涉及貨物流動(物流)外，還涉及金流與資訊流。", options: ["A、B正確，C不正確。", "A、C正確，B不專確。", "A、B、C皆正確", "B、C正確，A不正確。"], answer: 2 },
+    { q: "有關「全球運籌管理」(Global Logistics Management)的意涵，下列選項何者正確？\nA.降低生產與運輸成本、縮短交期時間，快速回應市場變化與客戶需求。\nB.依據市場即時需求生產，將企業整體經營成本、庫存與風險降至最低。\nC. 建構企業核心能力與競爭優勢，創造企業整體經營最大綜效。", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "有關全球運籌管理模式的敘述如下：針對客戶實際訂單需求，在客戶當地設立組裝中心...進行模組(Module)生產後運送給客戶。試問屬於何種全球運籌管理模式？", options: ["直接運送模式(Direct Shipment)", "當地補貨中心(Local Buffer Center)", "海外組裝中心(Configuration Center)", "以上皆非"], answer: 2 },
+    { q: "供應鏈管理可以為企業經營帶來哪些效益？\nA.創造低成本、高效率 B.高彈性及快速回應 C.利潤與附加價值", options: ["A、B、C皆正確", "A、B正確 C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "比較「推式供應鏈」與「拉式的供應鏈」的差異性，下列敘述何者正確？\n① 採用「拉式的供應鏈」是屬於零售商比較強勢的模式。\n② 採用「推式的供應鏈」是屬於製造商比較強勢的模式。", options: ["①正確，②不正確", "①不正確，②正確", "選項①與選項②皆正確", "選項①與選項②皆不正確"], answer: 2 },
+    { q: "有關全球運籌管理模式的敘述如下：根據客戶實際提貨數量作為交易依據，當地庫存風險由製造商承擔...就近支援當地通路。試問屬於何種模式？", options: ["直接運送模式(Direct Shipment)", "當地補貨中心(Local Buffer Center)", "海外組裝中心(Configuration Center)", "以上皆非"], answer: 1 },
+    { q: "有關物料需求規劃(MRP)對於生產管理的效益，下列敘述何者正確？\nA.有效控管生產前置時間 B.降低在製品庫存 C.精確掌握主生產排程計畫的產能需求與物料需求資訊 D.提升員工維修技術", options: ["AB", "ABC", "ACD", "ABCD"], answer: 1 },
+    { q: "某生產冰箱工廠設計產能 100 台，有效產能 80 台，實際產能 70 台，試問產能利用率為多少？", options: ["50%", "60%", "70%", "80%"], answer: 2 },
+    { q: "有關提升與擴充瓶頸製程產能的方法，下列選項何者正確？\nA.自動化物流設備導入 B.裁減生產線員工人數 C.關鍵製程外包 D.增購關鍵製程的機台 E.減少故障與保養頻率", options: ["AB", "ABCD", "ACDE", "ABCDE"], answer: 2 },
+    { q: "下列何者不是總體規劃(Aggregate Planning)所考慮的因素？", options: ["內部投資報酬率", "存貨水準", "競爭者動態", "市場銷售狀況"], answer: 0 },
+    { q: "在主排程規劃中訂定三階段時間柵欄(Time Fense)，生產排程禁止任何變動的階段是在：", options: ["凍結區域", "適度變動區域", "可變動區域", "以上皆非"], answer: 0 },
+    { q: "下列關於製造業與服務業的比較，下列敘述何者錯誤？", options: ["製造業的生產活動與顧客消費常會同時進行", "製造業的品質與生產績效較易衡量", "服務業提供無形的產出", "服務業的產出標準化程度較低"], answer: 0 },
+    { q: "「大量生產」是現代化工廠的特點之一，從事『大量生產』的基本條件是：", options: ["標準化", "多元化", "資訊化", "專業化"], answer: 0 },
+    { q: "有關再訂購點(Reorder Point, ROP)，下列敘述何者錯誤？", options: ["係指存貨水準降至某預定數量時，進行一定數量的補貨。", "服務水準設定越高，則再訂購點設定就會越高。", "物料平均消耗率越高，則再訂購點設定就會越高。", "補貨的物流前置時間越長，則再訂購點設定就會越低。"], answer: 3 },
+    { q: "關於經濟訂購量(EOQ)，又稱定量訂購(Q模式)的敘述何者正確？", options: ["耗用金額較大", "訂購量變動", "訂購時間不定", "所需安全存貨較高"], answer: 2 },
+    { q: "有關「經濟訂購週期」(Economic Order Period, EOP)的敘述，下列敘述何者正確？\nA.訂購量固定 B.訂購量則一次補足 C.訂購週期固定 D.每週期訂購量=每週期所需之存貨-盤點時之數量", options: ["AB", "ABC", "BCD", "ABCD"], answer: 2 },
+    { q: "宇柏公司在一月份的銷售原物料成本為 50 萬元，月度初庫存價值為 10 萬元，月度末庫存價值為 15 萬元，其庫存週轉率為何？", options: ["200%", "300%", "400%", "500%"], answer: 2 },
+    { q: "如何維持合理庫存是企業管理的重要工作，下列敘述何者錯誤？", options: ["庫存過剩會造成資金的積壓", "庫存過剩會造成物料折舊或陳腐過期而變成廢料", "庫存短缺會造成銷貨損失、甚至流失顧客。", "需準備較高的存貨量以滿足顧客服務最大化的需求"], answer: 3 },
+    { q: "再訂購點(Reorder Point, ROP)的決定不受何種因素影響？", options: ["購備時間", "耗用率", "安全存量", "驗收方式"], answer: 3 },
+    { q: "有關影響安全存量(Safety stock)的因素，下列敘述何者錯誤？", options: ["平均需求量", "存貨持有成本", "服務水準", "前置時間"], answer: 1 },
+    { q: "有關物料盤點的實施方式，下列敘述何者正確？\n① 全面盤點...逐項加以清點盤存。\n② 抽樣盤點...篩選出20種主要材料進行盤點。", options: ["①、②皆正確", "①、②皆不正確", "①正確、②不正確", "①不正確、②正確"], answer: 0 },
+    { q: "有關各項採購策略的優缺點，下列敘述何者錯誤？", options: ["少量多樣採購具有採數量折扣優惠及缺貨風險低的優點", "批量採購具有採數量折扣優惠及缺貨風險低的優點", "如以最低的價格購買，則有可能面臨不良品數量增加等風險。", "建立及時供應系統具有庫存量水準降低而趨近於零及缺貨風險低的優點。"], answer: 0 },
+    { q: "有關實施 JIT 採購的優點，下列敘述何者錯誤？", options: ["增加供應商與客戶的成本與作業時間", "作業彈性化與生產力的提昇", "滿足客戶對於及時供貨與最小安全庫存的要求", "庫存的降低與交期的改善"], answer: 0 },
+    { q: "有關縮短交期在供應管理的優點，下列敘述何者正確？\nA.提升產品品質 B.降低庫存數量與成本 C.增加公司接單彈性 D.降低整體營運成本 E.加速產品上市時間", options: ["ABC", "ABE", "ABDE", "ABCDE"], answer: 3 },
+    { q: "有關採購管理的目標，下列選項何者正確？\nA.供應商 B.價格 C.數量 D.交期 E.品質", options: ["ABC", "ABCD", "ACDE", "ABCDE"], answer: 3 },
+    { q: "有關現代採購作業的目標與使命，下列敘述何者錯誤？", options: ["採購應有整體持有成本的觀念，而非只把焦點放在價格上的節省。", "採購人員不可利用職務關係對廠商要求回扣、餽贈或招待", "採購屬於企業內部行政庶務工作，對於提升企業競爭力沒有幫助。", "採購人員採購相關認證，可增加在職場上的專業與競爭力。"], answer: 2 },
+    { q: "採購部門針對供應商進行評估的指標，下列敘述何者正確？\nA.品質(Quality) B.成本(Cost) C.交期(Delivery) D.公關、行銷與廣告 E.服務(Service)與彈性(Flexibility)", options: ["AB", "ABCD", "ABCE", "ABCDE"], answer: 2 },
+    { q: "針對供應商在品質(Quality)的績效評估，下列敘述何者正確？\nA.可由驗收或生產紀錄來判斷 B.評估重點如檢驗標準、數據及品質認證 C.評估指標如訂單拒收率、進貨不良率等", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確 A不正確。"], answer: 0 },
+    { q: "有關改善交期的方法與策略，下列敘述何者錯誤？", options: ["降低生產線瓶頸製程產能", "建立供應商存貨管理模式", "降低運輸前置時間", "及時供應採購"], answer: 0 },
+    { q: "關於企業推動協同計劃、預測與補貨(CPFR)的效益，以下敘述何者正確？\nA.供應鏈成員自主性與獲利降低。 B.減少生產與庫存浪費 C.減少缺貨、增加銷售 D.增加預測與計畫的準確度 E.降低長鞭效應的風險", options: ["ABC", "ABCD", "BCDE", "ABCDE"], answer: 2 },
+    { q: "有關協同採購(Collaborative Buying)所要獲得的主要效益，以下敘述何者正確？\nA.以量制價，達到降低採購成本。B.縮短採購與銷售作業的流程與時間 C.降低供應商之間的惡性競爭", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "下列何者為推動協同物流作業模式的重點項目？\nA.庫存查詢與貨況追蹤 B.國際運輸安排 C.通關作業查詢 D.物料生產成本 E.物料緊急調度與配送", options: ["ABC", "ABCE", "BCDE", "ABCDE"], answer: 1 },
+    { q: "有關彈性製造能力與先進規劃與排程，下列敘述何者錯誤？", options: ["彈性製造能力是以大量生產為目標，對於滿足客戶客製化需求沒有幫助。", "先進規劃與排程(APS)係指在考量資源有限的情形下...滿足客戶縮短前置時間要求。", "先進規劃與排程的特色包括同步規劃、考慮資源限制、即時性等。", "導入彈性製造能力與先進規劃與排程，對於降低長鞭效應有顯著效果。"], answer: 0 },
+    { q: "有關推動供應鏈協同作業效益，下列敘述何者正確？\nA.信任關係的建立 B.知識管理的建構 C.快速回應市場 D.全球運籌管理 E.財務借貸或紓困", options: ["ABC", "ABCD", "ABCE", "ABCDE"], answer: 1 },
+    { q: "下列何者為推動協同行銷與銷售(Collaborative Marketing/Selling)，下列敘述何者正確？\nA.整合資訊與作業流程，合作夥伴可共同支持顧客需求。\nB.協力提供消費者各種商品與服務的資訊與知識諮詢。\nC.共同執行產品的行銷與銷售的推動與合作。", options: ["A、B正確，C不正確。", "A、C正確，B不正確。", "A、B、C皆正確", "B、C正確，A不正確。"], answer: 2 },
+    { q: "為有效推動供應鏈管理，企業應採取什麼樣的經營態度？", options: ["凡事盡量自己來做", "盡可能把作業外包", "只執行少數企業自己專長的事情，其餘作業則外包出去。", "以不變應萬變"], answer: 2 },
+    { q: "貨物由目的地經由兩種或以上之運輸工具，配合完整之輸配送系統運送至目的地的運輸模式為何？", options: ["軸幅式運輸(hub-and-spoke system)", "複合式運輸(Multimodel Transportation)", "全程水路運輸(All Water Service)", "母船直靠港口運輸(Direct-call ports)"], answer: 1 },
+    { q: "宇博公司收到一美國客戶訂單出口至內陸城市底特律，客戶希望儘可能縮短交期並支付運費，需採取何種運輸方式？", options: ["迷你陸橋運輸服務(Mini-Land Bridge Service; MLB)", "北冰洋航線", "歐亞陸橋(Eurasian Continental Bridge)", "全程水路運輸服務(All Water Service)"], answer: 0 },
+    { q: "有關航空貨運使用航空盤櫃設備(ULD)的優點，下列敘述何者正確？\nA.提高飛航安全 B. 提高貨物保護性 C.提高貨載與燃油效率 D.提高航班準點率 E. 降低作業成本", options: ["AB", "ABC", "ABCE", "ABCDE"], answer: 3 },
+    { q: "有關國際貨櫃運輸整櫃(CY)出口作業流程的敘述，下列選項何者正確？\nA選定運送人與適當船期 B提領空櫃 C裝櫃 D出口通關手續 E裝船", options: ["AB", "ABCD", "ACDE", "ABCDE"], answer: 3 },
+    { q: "有關航空貨運的優點，下列敘述何者正確？\nA.運送時間短，可降低交貨成本。\nB.運輸途中貨物損毀、破損及失竊的機率較低\nC.適合運送季節性與流行性商品，擴大國際貿易商流的範圍。", options: ["A、B正確，C不正確。", "A、B、C皆正確", "A、C正確，B不正確。", "B、C正確 A不正確。"], answer: 1 },
+    { q: "假設你準備裝運一批極重或是超過寬度的貨物，如鋼鐵材料、電纜、大型機器等，以貨櫃運輸出口，試問需要以哪一種型態的貨櫃裝運？", options: ["普通貨櫃(Dry Container)", "冷藏貨櫃/冷凍貨櫃(Refrigerated Container)", "開頂貨櫃(Open Top Container)", "平板貨櫃/平台貨櫃(Flat/Platform)"], answer: 3 },
+    { q: "有關國際貨櫃運輸進口作業流程的敘述，下列選項何者正確？\n① 運送人在貨物即將抵達之前發出到貨通知。\n② 受貨人憑提貨單(D/O)提貨。\n③ 進口通關查驗分為免審免驗(C1)、應審書面(C2)及應審應驗(C3)三種。", options: ["①A、B正確，C不正確。", "①A、B、C皆正確", "①A、C正確，B不正確。", "①B、C正確，A不正確。"], answer: 1 },
+    { q: "一般仓储作业不管商品是否有日期限制，為了作業及管理的效率，對於商品的進出都採用何種方法來進行商品的管理？", options: ["後進後出法", "先進後出法", "先進先出法", "依通路商要求來調整"], answer: 2 },
+    { q: "揀貨作業中有關訂單別揀取與批次揀取的敘述，以下何者錯誤？", options: ["訂單別揀取是揀貨員獨立負責每張訂單，可以省去分揀和包裝成本。", "批次揀取是先合併訂單，再依儲位行列揀貨，之後依訂單作分類處理。", "訂單別揀取適用於少量、多品項、訂單數量龐大的揀貨作業。", "批次揀取的缺點是必需等訂單達一定數量才處理，會有時間延遲。"], answer: 2 },
+    { q: "流通業常用的揀貨設備：電腦輔助揀貨系統(CAPS)為半自動揀貨系統，下列敘述何者正確？\nA.適合少量、多樣及多頻率的訂單 B.檢貨錯誤率低 C.揀貨效率高 D. 有效調節檢貨人員工作負荷 E. 符合人因工程，降低員工職業傷害。", options: ["ABC", "ABCD", "ABDE", "ABCDE"], answer: 3 },
+    { q: "物流中心，有關出貨作業管理注意事項，下列敘述何者錯誤？", options: ["依據貨物數量、品項、品質檢驗等因素，確認是否與訂單相符。", "貨物包裝完成後，選擇適當搬運工具移運至指定碼頭等待裝車。", "出貨作業依據運送排程，以先進先出(FIFO)裝載堆置原則，減少在送貨地點卸貨時現場翻堆與失溫風險。", "在完成貨物裝車後，開立車輛放行單及運送單交付司機配送。"], answer: 2 },
+    { q: "有關倉儲具有的效益，下列敘述何者正確？\nA.提供產品存放場所，降低運輸成本。B.降低採購成本 C.降低缺貨風險、滿足顧客需求 D.建立調節性庫存、掌握及時商機", options: ["AC", "ABC", "ABD", "ABCD"], answer: 3 },
+    { q: "流通加工與以下哪一個供應鏈管理策略直接相關？", options: ["企業流程再造(BRP)", "延遲策略(Postponement)", "六標準差(6 sigma)", "長鞭效應(Bullwhip Effect)"], answer: 1 },
+    { q: "有關倉儲管理的基本原則，下列敘述何者錯誤？", options: ["導入 5S 管理", "落實各項標準作業流程(SOP)", "無須考量產品特性，所有商品集中貯存，提升倉庫容量利用率。", "建立各項關鍵績效指標(KPI)進行持續改善"], answer: 2 },
+    { q: "玉華公司進口一批貨物，海關通知需在隔天辦公時間結束前，補送書面報單及其他文件供查驗貨物，此種通關方式為何？", options: ["C1通關", "C2通關", "C3通關", "C4通關"], answer: 2 },
+    { q: "下列選項何者屬於海關監視的「保稅區」？\nA.加工出口區 B.科學工業園區 C.國際物流中心 D.自由貿易港區 E.保稅工廠", options: ["AB", "ABC", "ACDE", "ABCDE"], answer: 3 },
+    { q: "下列有關保稅制度的敘述，何者正確？\nA.「保稅貨品」係指未經海關徵稅放行之貨物，在保稅區內暫時免除或延緩繳納義務。\nB.貨物以原型態或經加工後出口，則免徵關稅。\nC.貨物進口(即內銷至課稅區)，應繳納關稅。\nD.在保稅區內，其未稅貨品即為保稅品，屬管制品需列帳接受海關監管。", options: ["AB", "ABC", "ACD", "ABCD"], answer: 3 },
+    { q: "國際物流中心之保稅貨物輸往相關具有「按月彙報」資格之保稅區(如科學園區、保稅工廠)之通關作業，下列敘述何者錯誤？", options: ["避免貨物通關查驗所造成不必要的毀損", "加速貨物通關作業時效，支援產業 JIT 供貨需求。", "報關費用較一般進出口報關費便宜許多", "非保稅貨物進出口及輸往相關保稅區通關作業亦一體適用"], answer: 3 },
+    { q: "宇博企業欲出口一批貨物，海關通知需要於隔天辦公時間結束前，補送書面報單及其他相關文件，即可免驗貨物放行。請問，這是屬於哪一種通關方式？", options: ["C1", "C2", "C3", "C4"], answer: 1 },
+    { q: "海關推動「關港貿單一窗口」(CPT)計畫，下列敘述何者正確？", options: ["推動國際間各國公部門貿易電子資料交換與分享", "整合機關資訊，建立共用資料庫，以達資訊共享", "提供進出口業者及機關「一次申辦，全程服務」的作業環境", "以上皆是"], answer: 3 },
+    { q: "一般空運出口報關作業，需檢附相關文件資料供審查，下列選項何者錯誤？", options: ["提貨單(Delivery Order, D/O)", "裝箱單(Packing List)", "出口報單(Export Declaration)", "商業發票(Invoice)"], answer: 0 },
+    { q: "下列哪一選項屬於倉儲管理系統(WMS)「儲位管理」的功能？\nA.提供批次儲位建立功能，快速建立大量儲位。\nB.提供多倉、多地點、作業別、溫層、貨架型態等儲位管理資訊。\nC.提供倉儲庫存結算功能，統計存放容積、面積、周轉率等資訊。", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "有關運輸管理系統(TMS)的功能描述，下列選項何者正確？\nA.降低營運成本 B.提供車輛運行路徑方案 C.減少車輛閒置 D.強化安全營運", options: ["AB", "ABC", "BCD", "ABCD"], answer: 3 },
+    { q: "有關訂單管理系統(OMS)的作用描述，下列選項何者正確？\nA.動態掌握訂單的進展和完成情況 B.提升物流過程的作業效率 C.縮短訂單處理時間與作業成本 D.提高訂單處理正確性與顧客滿意度", options: ["AB", "ABC", "BCD", "ABCD"], answer: 3 },
+    { q: "有關「e化物流資訊共同平台」之功能，下列選項何者正確？\nA.供應鏈各成員核心業務互補建立策略夥伴關係\nB.確實掌握貨物動態與交期，提昇整體供應鏈協同合作的績效。\nC.縮短訂單前置時間與降低安全庫存，避免長鞭效應的發生。", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "有關 ERP 系統「物料管理模組(Materials Management) 模組」功能，下列選項何者正確？\nA.建立物料庫存資訊及供補作業 B.提供及時物料需求分析 C.適時支援生產及銷售的需求", options: ["A、B、C皆正確", "A、B正確 C不正確。", "A、C正確，B不正確。", "B、C正確，A不專確。"], answer: 0 },
+    { q: "有關 ERP 系統「品質管理(Quality Management)模組」功能，下列選項何者正確？\nA.建立與品質相關的作業與管理，滿足 ISO 9000 中所定義的作業條件。\nB.支援製造及銷售所重視的品質管理相關作業\nC.提升產品品質及競爭力", options: ["A、B、C皆正確", "A、B正確，C不正確。", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 0 },
+    { q: "物流管理資訊系統是由下列哪一項作業軟體組成？\nA.倉儲管理系統(WMS) B.運輸管理系統(TMS) C.訂單管理系統(OMS)", options: ["A、B正確，C不正確。", "A、B、C皆正確", "A、C正確，B不正確。", "B、C正確，A不正確。"], answer: 1 }
+];
+
+let currentQuestions = [];
+
+// 洗牌演算法：完全隨機打亂陣列
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[array[j]]] = [array[array[j]], array[i]];
+    }
+    return array;
+}
+
+// 初始化測驗：隨機抽 30 題
+function initQuiz() {
+    const shuffledBank = shuffle([...itemBank]);
+    currentQuestions = shuffledBank.slice(0, 30); // 抽取前 30 題
+
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+
+    currentQuestions.forEach((item, index) => {
+        let optionsHTML = '';
+        item.options.forEach((opt, optIdx) => {
+            optionsHTML += `
+                <label>
+                    <input type="radio" name="q${index}" value="${optIdx}">
+                    ${opt}
+                </label>
+            `;
+        });
+
+        container.innerHTML += `
+            <div class="question" id="qBlock${index}">
+                <p>${index + 1}. ${item.q}</p>
+                <div class="options">${optionsHTML}</div>
+                <div id="feedback${index}"></div>
+            </div>
+        `;
+    });
+
+    // 重設結果畫面
+    document.getElementById('resultArea').style.display = 'none';
+    const btn = document.querySelector('button');
+    btn.disabled = false;
+    btn.innerText = '繳交答案，立即查看分數與解答';
+    btn.style.background = '#2ecc71';
+}
+
+// 繳交答案與評分
+function submitQuiz() {
+    let correctCount = 0;
+    let allAnswered = true;
+
+    // 先檢查是否全部作答
+    for (let index = 0; index < currentQuestions.length; index++) {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (!selected) {
+            allAnswered = false;
+            break;
+        }
+    }
+
+    if (!allAnswered) {
+        alert("⚠️ 發現您還有題目沒寫完喔！請全部勾選後再繳交解答。");
+        return;
+    }
+
+    // 開始對答案與呈現反饋
+    currentQuestions.forEach((item, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        const userAnswer = parseInt(selected.value);
+        const feedbackDiv = document.getElementById(`feedback${index}`);
+
+        if (userAnswer === item.answer) {
+            correctCount++;
+            feedbackDiv.innerHTML = `<div class="feedback correct-ans">🎯 答對了！</div>`;
+        } else {
+            feedbackDiv.innerHTML = `<div class="feedback wrong-ans">❌ 答錯囉！正確答案為：${item.options[item.answer]}</div>`;
+        }
+    });
+
+    // 計算 100 分制分數
+    const score = Math.round((correctCount / currentQuestions.length) * 100);
+
+    // 顯示最下方總分
+    document.getElementById('scoreDisplay').innerText = `您的總得分：${score} 分`;
+    document.getElementById('correctCountDisplay').innerText = correctCount;
+    document.getElementById('resultArea').style.display = 'block';
+
+    // 鎖定按鈕防止重複提交
+    const btn = document.querySelector('button');
+    btn.disabled = true;
+    btn.innerText = '測驗完成！看上面各題對答案';
+    btn.style.background = '#95a5a6';
+
+    // 自動捲動到結果最下方
+    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 網頁載入時啟動
+window.onload = initQuiz;
+</script>
+
+</body>
+</html>
